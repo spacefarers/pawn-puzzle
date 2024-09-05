@@ -126,16 +126,16 @@ def hash_board(board):
 def search():
     positions_seen = set()
     total_iters = 0
-    search_queue = [(0, ((3,0), init()))]  # (iter, (empty_square, board))
+    search_queue = [(0, ((3, 0), init(), []))]  # (iter, (empty_square, board, path))
     prev_iter = 0
     while len(search_queue) > 0:
-        iters, (empty_square, board) = heapq.heappop(search_queue)
+        iters, (empty_square, board, path) = heapq.heappop(search_queue)
         board_hashed = hash_board(board)
         if board_hashed in positions_seen:
             continue
         positions_seen.add(board_hashed)
         if iters != prev_iter:
-            print(f"Number of Moves: {iters}")
+            print(f"Searched up to {iters} moves")
             prev_iter = iters
         total_iters += 1
         if total_iters%100000 == 0:
@@ -143,7 +143,8 @@ def search():
         if check_success(board):
             print("Success!")
             print_board(board)
-            print(f"Number of Moves: {iter}")
+            print(f"Number of Moves: {iters}")
+            print(f"Path: {path}")
             return
         # find all possible moves
         board_bp = [[deepcopy(board[j][i]) for i in range(4)] for j in range(4)]
@@ -151,8 +152,9 @@ def search():
         for i in range(4):
             for j in range(4):
                 if board[i][j] is not None and board[i][j].can_move(empty_square):
+                    piece_name = str(board[i][j])
                     empty_square = board[i][j].move(board, empty_square)
-                    heapq.heappush(search_queue, (iters+1, (empty_square, board)))
+                    heapq.heappush(search_queue, (iters+1, (empty_square, board, path + [piece_name])))
                     empty_square = deepcopy(empty_square_bp)
                     board = deepcopy(board_bp)
     print(f"Total iterations: {total_iters}")
